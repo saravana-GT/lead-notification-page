@@ -53,7 +53,9 @@
     </div>
 
     <script>
-        const N8N_WEBHOOK_URL = 'https://saravana-leads.loca.lt/webhook/new-lead';
+        // Direct Telegram Setup (No n8n needed for live version)
+        const TELEGRAM_BOT_TOKEN = '8637018723:AAGSdpY-_v3nQixuNnka9Ag78yjfm-g64s0';
+        const TELEGRAM_CHAT_ID = '1290282570';
 
         const leadForm = document.getElementById('leadForm');
         const submitBtn = document.getElementById('submitBtn');
@@ -63,37 +65,37 @@
         leadForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            if (N8N_WEBHOOK_URL === 'REPLACE_WITH_YOUR_N8N_WEBHOOK_URL') {
-                alert('Wait! You need to add your n8n Webhook URL in the script tag of index.html');
-                return;
-            }
-
             // UI Feedback
             submitBtn.disabled = true;
             submitBtn.classList.add('loading');
             responseMessage.style.display = 'none';
 
-            const formData = {
-                name: document.getElementById('name').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value,
-                message: document.getElementById('message').value,
-            };
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const message = document.getElementById('message').value;
+
+            const text = `🚀 *New Lead Received*\n\n👤 *Name:* ${name}\n📧 *Email:* ${email}\n📞 *Phone:* ${phone}\n💬 *Message:* \n${message}`;
 
             try {
-                const response = await fetch(N8N_WEBHOOK_URL, {
+                const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(formData),
+                    body: JSON.stringify({
+                        chat_id: TELEGRAM_CHAT_ID,
+                        text: text,
+                        parse_mode: 'Markdown'
+                    }),
                 });
 
                 if (response.ok) {
                     showMessage('Success! Your inquiry has been sent.', 'success');
                     leadForm.reset();
                 } else {
-                    showMessage('Oops! Something went wrong. Please try again.', 'error');
+                    showMessage('Oops! Telegram service error. Please try again.', 'error');
                 }
             } catch (error) {
                 console.error('Error:', error);
